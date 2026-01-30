@@ -28,7 +28,7 @@ const Config = {
   GRACE_FRAMES: 30,  // 1 second at 30fps
 
   // Crank (matching original exactly)
-  CRANK_SENSITIVITY: 0.08,  // Radians per degree of crank rotation
+  CRANK_SENSITIVITY: 0.015,  // Radians per degree of crank rotation (lower = more resistance)
   DPAD_TURN_SPEED: 0.08,    // Radians per frame with arrow keys
 
   // Dots
