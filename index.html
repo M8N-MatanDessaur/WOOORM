@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WOOORM</title>
+  <meta name="description" content="A minimalist snake game. Steer with the crank, eat dots, bank your length through wormholes.">
+  <meta name="keywords" content="wooorm, snake game, crank game, arcade game, browser game">
+  <meta name="author" content="WOOORM">
+  <meta name="theme-color" content="#f4f1eb">
+
+  <meta property="og:title" content="WOOORM">
+  <meta property="og:description" content="A minimalist snake game. Steer with the crank, eat dots, bank your length through wormholes.">
+  <meta property="og:type" content="website">
+
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%231a1a1a' width='100' height='100' rx='12'/><circle cx='30' cy='50' r='8' fill='%23f4f1eb'/><circle cx='50' cy='50' r='6' fill='%23f4f1eb'/><circle cx='68' cy='50' r='5' fill='%23f4f1eb'/></svg>">
+
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles/main.css">
+</head>
+<body>
+  <div class="header">
+    <h1 class="title">WOOORM</h1>
+  </div>
+
+  <!-- Mobile header -->
+  <div class="mobile-header">
+    <div class="mobile-stats">
+      <div class="mobile-stat">
+        <span class="mobile-label">Level</span>
+        <span class="mobile-value" id="mobileLevel">1</span>
+      </div>
+      <div class="mobile-stat">
+        <span class="mobile-label">Dots</span>
+        <span class="mobile-value" id="mobileDots">0/5</span>
+      </div>
+      <div class="mobile-stat">
+        <span class="mobile-label">Score</span>
+        <span class="mobile-value" id="mobileScore">0</span>
+      </div>
+    </div>
+    <div class="mobile-progress-bar">
+      <div class="mobile-progress-fill" id="mobileProgressBar" style="width: 0%"></div>
+    </div>
+  </div>
+
+  <!-- Info Modal -->
+  <div class="modal-overlay" id="infoModal">
+    <div class="modal">
+      <div class="modal-title">How to Play</div>
+      <div class="modal-section">
+        <div class="modal-section-title">Controls</div>
+        <div class="modal-row"><span class="key">Drag Crank</span><span>Steer worm</span></div>
+        <div class="modal-row"><span class="key">Arrow Keys</span><span>Steer worm</span></div>
+      </div>
+      <div class="modal-section">
+        <div class="modal-section-title">Rules</div>
+        <p class="modal-text">Eat dots to grow. Reach the minimum dots to open the wormhole. Enter the wormhole to bank your length as points. Avoid poison dots (outlined), hunters, and walls!</p>
+      </div>
+      <div class="modal-section">
+        <button class="modal-theme-toggle" id="modalThemeToggle">
+          <span class="theme-toggle-icon" id="modalThemeIcon">&#9788;</span>
+          <span id="modalThemeText">Light Mode</span>
+        </button>
+      </div>
+      <button class="modal-close" id="modalClose">Close</button>
+    </div>
+  </div>
+
+  <div class="game-wrapper">
+    <!-- Left panel: Level, Dots, Combo -->
+    <div class="side-panel left-panel">
+      <div class="stat-box">
+        <div class="stat-label">Level</div>
+        <div class="stat-value" id="level">1</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">Dots</div>
+        <div class="stat-value small" id="dots">0/5</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">Combo</div>
+        <div class="stat-value small" id="combo">x1</div>
+      </div>
+    </div>
+
+    <!-- Center: Game + Crank -->
+    <div class="center-column">
+      <div class="game-container">
+        <canvas id="gameCanvas" width="400" height="240"></canvas>
+        <div class="overlay" id="startScreen">
+          <div class="overlay-title">Ready</div>
+          <div class="level-select">
+            <button class="level-btn" id="levelDown">-</button>
+            <div class="level-select-inner">
+              <div class="level-select-label">Level</div>
+              <div class="level-select-value" id="startLevel">1</div>
+            </div>
+            <button class="level-btn" id="levelUp">+</button>
+          </div>
+          <div class="overlay-instruction">Press space to begin</div>
+          <button class="start-btn" id="startBtn">Start</button>
+        </div>
+        <div class="overlay" id="gameOverScreen" style="display: none;">
+          <div class="overlay-title">Game Over</div>
+          <div class="overlay-score" id="finalScore">0</div>
+          <div class="overlay-highscore" id="highScoreDisplay"></div>
+          <div class="overlay-instruction">Press space to restart</div>
+          <button class="start-btn" id="restartBtn">Restart</button>
+        </div>
+      </div>
+
+      <!-- Crank below game (desktop) -->
+      <div class="crank-container">
+        <div class="crank-control" id="crankControl">
+          <div class="crank-center"></div>
+          <div class="crank-arm" id="crankArm">
+            <div class="crank-handle"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right panel: Score, Controls, Legend, Theme -->
+    <div class="side-panel right-panel">
+      <div class="stat-box">
+        <div class="stat-label">Score</div>
+        <div class="stat-value" id="score">0</div>
+      </div>
+
+      <div class="info-box">
+        <div class="info-title">Controls</div>
+        <div class="control-row"><span class="key">Crank</span><span>Steer</span></div>
+        <div class="control-row"><span class="key">Arrows</span><span>Steer</span></div>
+      </div>
+
+      <div class="info-box">
+        <div class="info-title">Legend</div>
+        <p class="rules-text">Filled = eat<br>Outlined = poison<br>Wormhole = exit</p>
+      </div>
+
+      <button class="theme-toggle" id="themeToggle">
+        <span class="theme-toggle-icon" id="themeIcon">&#9788;</span>
+        <span class="theme-toggle-text">Light</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Mobile controls: Left Arrow + Crank + Right Arrow -->
+  <div class="mobile-controls-container">
+    <button class="mobile-arrow-btn" id="mobileLeftArrow">
+      <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"></path></svg>
+    </button>
+    <div class="mobile-crank" id="mobileCrank">
+      <div class="mobile-crank-center"></div>
+      <div class="mobile-crank-arm" id="mobileCrankArm">
+        <div class="mobile-crank-handle"></div>
+      </div>
+    </div>
+    <button class="mobile-arrow-btn" id="mobileRightArrow">
+      <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"></path></svg>
+    </button>
+  </div>
+
+  <button class="mobile-info-btn" id="mobileInfoBtn">?</button>
+
+  <!-- Scripts loaded in dependency order -->
+  <script src="scripts/config.js"></script>
+  <script src="scripts/state.js"></script>
+  <script src="scripts/audio.js"></script>
+  <script src="scripts/theme.js"></script>
+  <script src="scripts/worm.js"></script>
+  <script src="scripts/dots.js"></script>
+  <script src="scripts/wormhole.js"></script>
+  <script src="scripts/obstacles.js"></script>
+  <script src="scripts/hunters.js"></script>
+  <script src="scripts/particles.js"></script>
+  <script src="scripts/ui.js"></script>
+  <script src="scripts/renderer.js"></script>
+  <script src="scripts/input.js"></script>
+  <script src="scripts/game.js"></script>
+</body>
+</html>
